@@ -23,30 +23,6 @@ namespace RelayControllerForSHUR01A.ViewModels
         IEventAggregator _ea;
         LogWriter logWriter;
 
-        public YoukyuuOutouKekka YoukyuuOutouKekka
-        {
-            get => serialInterfaceProtocolManager.YoukyuuOutouKekka;
-            set { serialInterfaceProtocolManager.YoukyuuOutouKekka = value; }
-        }
-
-        public NinshouJoutai NinshouJoutai
-        {
-            get => serialInterfaceProtocolManager.NinshouJoutai;
-            set { serialInterfaceProtocolManager.NinshouJoutai = value; }
-        }
-
-        public NinshouKanryouJoutai NinshouKanryouJoutai
-        {
-            get => serialInterfaceProtocolManager.NinshouKanryouJoutai;
-            set { serialInterfaceProtocolManager.NinshouKanryouJoutai = value; }
-        }
-
-        public NinshouKekkaNgShousai NinshouKekkaNgShousai
-        {
-            get => serialInterfaceProtocolManager.NinshouKekkaNgShousai;
-            set { serialInterfaceProtocolManager.NinshouKekkaNgShousai = value; }
-        }
-
         public string NinshouJoutaiYoukyuuOutouRiyoushaId
         {
             get => serialInterfaceProtocolManager.RiyoushaId;
@@ -59,8 +35,10 @@ namespace RelayControllerForSHUR01A.ViewModels
             // コマンドの準備
             SerialStartButton = new DelegateCommand(SerialStartButtonExecute);
             SerialStopButton = new DelegateCommand(SerialStopButtonExecute);
-            NinshouYoukyuuCommandTestSendButton = new DelegateCommand(NinshouYoukyuuCommandTestSendButtonExecute);
-            NinshouJoutaiYoukyuuCommandTestSendButton = new DelegateCommand(NinshouJoutaiYoukyuuCommandTestSendButtonExecute);
+            RelayOnButton = new DelegateCommand(RelayOnButtonExecute);
+            RelayOffButton = new DelegateCommand(RelayOffButtonExecute);
+            RelayToggleButton = new DelegateCommand(RelayToggleButtonExecute);
+
             LogClearButton = new DelegateCommand(LogClearButtonExecute);
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
             IncrementYoukyuuOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuOutouJikanMsValueExecute);
@@ -113,7 +91,7 @@ namespace RelayControllerForSHUR01A.ViewModels
             serialInterfaceProtocolManager.ComStop();
         }
 
-        public DelegateCommand NinshouYoukyuuCommandTestSendButton { get; }
+        public DelegateCommand RelayOnButton { get; }
 
         // 認証要求関係
 
@@ -125,17 +103,25 @@ namespace RelayControllerForSHUR01A.ViewModels
             set { SetProperty(ref _ninshouYoukyuuRiyoushaId, value); }
         }
 
-        private void NinshouYoukyuuCommandTestSendButtonExecute()
+        private void RelayOnButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new NinshouYoukyuuCommand(1, NyuutaishitsuHoukou.Nyuushitsu, _ninshouYoukyuuRiyoushaId));
+            serialInterfaceProtocolManager.Send(new NinshouYoukyuuCommand());
         }
 
-        public DelegateCommand NinshouJoutaiYoukyuuCommandTestSendButton { get; }
+        public DelegateCommand RelayOffButton { get; }
 
-        private void NinshouJoutaiYoukyuuCommandTestSendButtonExecute()
+        private void RelayOffButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new NinshouJoutaiYoukyuuCommand(1, NyuutaishitsuHoukou.Nyuushitsu));
+            serialInterfaceProtocolManager.Send(new NinshouYoukyuuOutouCommand());
         }
+
+        public DelegateCommand RelayToggleButton { get; }
+
+        private void RelayToggleButtonExecute()
+        {
+            serialInterfaceProtocolManager.SendToggle();
+        }
+
 
         public DelegateCommand LogClearButton { get; }
 

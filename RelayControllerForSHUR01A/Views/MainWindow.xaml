@@ -61,9 +61,11 @@
             <!-- 認証要求 -->
             <Label Content="■ 認証要求" Margin="0 0 0 1"></Label>
             <WrapPanel Margin="22 0 0 0 ">
-                <Button Content="認証要求送信" Command="{Binding NinshouYoukyuuCommandTestSendButton}"/>
+                <Button Content="RelayON" Command="{Binding RelayOnButton}"/>
                 <Border Width="20" Height="Auto"/>
-                <Button Content="認証要求送信2" Command="{Binding NinshouYoukyuuCommandTestSendButton2}"/>
+                <Button Content="RelayOFF" Command="{Binding RelayOffButton}"/> 
+                <Border Width="20" Height="Auto"/>
+                <Button Content="RelayToggle" Command="{Binding RelayToggleButton}"/>
             </WrapPanel>
             <!-- 認証要求応答 -->
             <!-- 認証状態要求 -->

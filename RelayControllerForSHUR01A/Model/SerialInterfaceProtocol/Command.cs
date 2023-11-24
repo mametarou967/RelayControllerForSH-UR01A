@@ -10,10 +10,10 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
     {
         [StringValue("ダミー")]
         DummyCommand = 0,
-        [StringValue("認証要求")]
-        NinshouYoukyuu = 1,
-        [StringValue("認証要求応答")]
-        NinshouYoukyuuOutou = 2,
+        [StringValue("リレーON")]
+        RelayOn = 1,
+        [StringValue("RelayOFF")]
+        RelayOff = 2,
         [StringValue("認証状態要求")]
         NinshouJoutaiYoukyuu = 3,
         [StringValue("認証状態要求応答")]

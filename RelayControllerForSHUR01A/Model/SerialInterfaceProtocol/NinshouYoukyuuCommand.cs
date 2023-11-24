@@ -6,34 +6,17 @@ using System.Threading.Tasks;
 
 namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
 {
-    public class NinshouYoukyuuCommand : Command
+    public class NinshouYoukyuuCommand : ICommand
     {
-        public string Id { get; private set; }
+        public CommandType CommandType => CommandType.RelayOn;
 
-        public override CommandType CommandType => CommandType.NinshouYoukyuu;
-
-        protected override byte[] CommandPayloadByteArray
+        public byte[] ByteArray()
         {
-            get
-            {
-                List<byte> data = new List<byte>();
+            List<byte> data = new List<byte>() { };
 
-                data.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray(Id.Length)));
-                data.AddRange(ConvertDigitsToAsciiArray(Id));
+            data.AddRange(Encoding.ASCII.GetBytes("AT+CH1=1"));
 
-                return data.ToArray();
-            }
-        }
-
-        protected override string CommadString => $"利用者ID:{Id}";
-
-        public NinshouYoukyuuCommand(
-            int idTanmatsuAddress,
-            NyuutaishitsuHoukou nyuutaishitsuHoukou,
-            string id
-        ) : base(idTanmatsuAddress, nyuutaishitsuHoukou)
-        {
-            Id = id;
+            return data.ToArray();
         }
     }
 }

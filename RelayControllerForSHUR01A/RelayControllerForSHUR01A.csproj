@@ -76,12 +76,10 @@
     <Compile Include="Model\SerialInterfaceProtocol\CommandGenerator.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\DummyCommand.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\ICommand.cs" />
-    <Compile Include="Model\SerialInterfaceProtocol\NinshouJoutaiYoukyuuCommand.cs" />
-    <Compile Include="Model\SerialInterfaceProtocol\NinshouJoutaiYoukyuuOutouCommand.cs" />
-    <Compile Include="Model\SerialInterfaceProtocol\NinshouYoukyuuCommand.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\NinshouYoukyuuOutouCommand.cs" />
     <Compile Include="Model\SerialInterfaceProtocol\SerialInterfaceProtocolManager.cs" />
     <Compile Include="Model\SerialPortManager\SerialPortManager.cs" />
+    <Compile Include="Model\SerialInterfaceProtocol\NinshouYoukyuuCommand.cs" />
     <Compile Include="ViewModels\ComboBoxViewModel.cs" />
     <Compile Include="ViewModels\LogItem.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
