@@ -45,8 +45,10 @@ namespace RelayControllerForSHUR01A.ViewModels
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
             IncrementYoukyuuOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuOutouJikanMsValueExecute);
             DecrementYoukyuuOutouJikanMsCommand = new DelegateCommand(DecrementYoukyuuOutouJikanMsValueExecute);
-            IncrementYoukyuuJoutaiOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuJoutaiOutouJikanMsValueExecute);
-            DecrementYoukyuuJoutaiOutouJikanMsCommand = new DelegateCommand(DecrementYoukyuuJoutaiOutouJikanMsValueExecute);
+            IncrementRelayOnJikanMsMsCommand = new DelegateCommand(IncrementRelayOnJikanMsValueExecute);
+            DecrementRelayOnJikanMsMsCommand = new DelegateCommand(DecrementRelayOnJikanMsValueExecute);
+            IncrementRelayOffJikanMsMsCommand = new DelegateCommand(IncrementRelayOffJikanMsValueExecute);
+            DecrementRelayOffJikanMsMsCommand = new DelegateCommand(DecrementRelayOffJikanMsValueExecute);
 
             // コンボボックスの準備
             SerialPortManager.GetAvailablePortNames().ForEach(serialPort =>
@@ -255,28 +257,55 @@ namespace RelayControllerForSHUR01A.ViewModels
         }
 
         // 要求状態応答時間
-        public uint YoukyuuJoutaiOutouJikanMs
+        public uint RelayOnJikanMs
         {
-            get { return serialInterfaceProtocolManager.YoukyuuJoutaiOutouJikanMs; }
-            set { SetProperty(ref serialInterfaceProtocolManager.YoukyuuJoutaiOutouJikanMs, value); }
+            get { return serialInterfaceProtocolManager.ReleyOnJikanMs; }
+            set { SetProperty(ref serialInterfaceProtocolManager.ReleyOnJikanMs, value); }
         }
 
-        public DelegateCommand IncrementYoukyuuJoutaiOutouJikanMsCommand { get; private set; }
-        public DelegateCommand DecrementYoukyuuJoutaiOutouJikanMsCommand { get; private set; }
+        public DelegateCommand IncrementRelayOnJikanMsMsCommand { get; private set; }
+        public DelegateCommand DecrementRelayOnJikanMsMsCommand { get; private set; }
 
-        private void IncrementYoukyuuJoutaiOutouJikanMsValueExecute()
+        private void IncrementRelayOnJikanMsValueExecute()
         {
-            if (YoukyuuJoutaiOutouJikanMs <= 9900)
+            if (RelayOnJikanMs <= 9900)
             {
-                YoukyuuJoutaiOutouJikanMs = YoukyuuJoutaiOutouJikanMs + 100;
+                RelayOnJikanMs = RelayOnJikanMs + 100;
             }
         }
 
-        private void DecrementYoukyuuJoutaiOutouJikanMsValueExecute()
+        private void DecrementRelayOnJikanMsValueExecute()
         {
-            if (YoukyuuJoutaiOutouJikanMs >= 100)
+            if (RelayOnJikanMs >= 100)
             {
-                YoukyuuJoutaiOutouJikanMs = YoukyuuJoutaiOutouJikanMs - 100;
+                RelayOnJikanMs = RelayOnJikanMs - 100;
+            }
+        }
+
+
+        // 要求状態応答時間
+        public uint RelayOffJikanMs
+        {
+            get { return serialInterfaceProtocolManager.ReleyOffJikanMs; }
+            set { SetProperty(ref serialInterfaceProtocolManager.ReleyOffJikanMs, value); }
+        }
+
+        public DelegateCommand IncrementRelayOffJikanMsMsCommand { get; private set; }
+        public DelegateCommand DecrementRelayOffJikanMsMsCommand { get; private set; }
+
+        private void IncrementRelayOffJikanMsValueExecute()
+        {
+            if (RelayOffJikanMs <= 9900)
+            {
+                RelayOffJikanMs = RelayOffJikanMs + 100;
+            }
+        }
+
+        private void DecrementRelayOffJikanMsValueExecute()
+        {
+            if (RelayOffJikanMs >= 100)
+            {
+                RelayOffJikanMs = RelayOffJikanMs - 100;
             }
         }
 

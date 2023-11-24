@@ -79,18 +79,18 @@
                     </WrapPanel>
                     <WrapPanel Margin="0 0 0 0 ">
                         <Label Content="応答時間(ms):" />
-                        <TextBox TextAlignment="Right" Text="{Binding YoukyuuJoutaiOutouJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TextAlignment="Right" Text="{Binding RelayOnJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  HorizontalAlignment="Center" VerticalAlignment="Center" Width="50"/>
-                        <RepeatButton Content="▲" FontSize="10"  Width="20" Height="18" Command="{Binding IncrementYoukyuuJoutaiOutouJikanMsCommand}"
+                        <RepeatButton Content="▲" FontSize="10"  Width="20" Height="18" Command="{Binding IncrementRelayOnJikanMsMsCommand}"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <RepeatButton Content="▼" FontSize="10" Width="20" Height="18" Command="{Binding DecrementYoukyuuJoutaiOutouJikanMsCommand}"
+                        <RepeatButton Content="▼" FontSize="10" Width="20" Height="18" Command="{Binding DecrementRelayOnJikanMsMsCommand}"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <Label Content="応答時間(ms):" />
-                        <TextBox TextAlignment="Right" Text="{Binding YoukyuuJoutaiOutouJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox TextAlignment="Right" Text="{Binding RelayOffJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  HorizontalAlignment="Center" VerticalAlignment="Center" Width="50"/>
-                        <RepeatButton Content="▲" FontSize="10"  Width="20" Height="18" Command="{Binding IncrementYoukyuuJoutaiOutouJikanMsCommand}"
+                        <RepeatButton Content="▲" FontSize="10"  Width="20" Height="18" Command="{Binding IncrementRelayOnJikanMsMsCommand}"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <RepeatButton Content="▼" FontSize="10" Width="20" Height="18" Command="{Binding DecrementYoukyuuJoutaiOutouJikanMsCommand}"
+                        <RepeatButton Content="▼" FontSize="10" Width="20" Height="18" Command="{Binding DecrementRelayOffJikanMsMsCommand}"
                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </WrapPanel>
                 </StackPanel>
