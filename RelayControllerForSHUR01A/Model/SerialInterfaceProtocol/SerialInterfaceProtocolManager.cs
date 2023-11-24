@@ -3,6 +3,7 @@ using RelayControllerForSHUR01A.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
@@ -21,6 +22,8 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
         ILogWriteRequester logWriteRequester;
         private readonly object sendLock = new object(); // ロックオブジェクト
         RelayStatus relayStatus = RelayStatus.Off;
+        private CancellationTokenSource cancellationTokenSource;
+        Task serialComTask;
 
 
         // 要求応答プロパティ
@@ -106,6 +109,59 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
             if (relayStatus == RelayStatus.Off) command = new NinshouYoukyuuCommand();
 
             Send(command);
+        }
+
+
+        public bool StartRenzokuDousa()
+        {
+            // 例外処理
+
+            cancellationTokenSource = new CancellationTokenSource();
+
+            serialComTask = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    if (cancellationTokenSource.Token.IsCancellationRequested) break;
+                    Send(new NinshouYoukyuuCommand());
+
+                    await Task.Delay(1000); // Adjust the delay duration as needed
+
+                    if (cancellationTokenSource.Token.IsCancellationRequested) break;
+                    Send(new NinshouYoukyuuOutouCommand());
+                    
+                    await Task.Delay(1000); // Adjust the delay duration as needed
+
+                }
+                logWriteRequester.WriteRequest(LogLevel.Info, "task完了 " );
+
+            });
+
+            return true;
+        }
+
+
+
+        public bool StopRenzokuDousa()
+        {
+            bool result = true;
+
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+                try
+                {
+                    var waitResult = serialComTask.Wait(1000 + 1000);
+                    if (!waitResult) result = false;
+                }
+                catch
+                {
+                }
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = null;
+            }
+
+            return result;
         }
 
         private void DataReceiveAction(byte[] datas)

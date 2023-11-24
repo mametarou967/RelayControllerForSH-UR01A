@@ -73,9 +73,9 @@
             <WrapPanel Margin="22 0 0 0 ">
                 <StackPanel>
                     <WrapPanel Margin="0 0 0 0 ">
-                        <Button Content="認証状態要求送信" Command="{Binding NinshouJoutaiYoukyuuCommandTestSendButton}"/>
+                        <Button Content="連続動作開始" Command="{Binding RenzokuDousaKaishiButton}"/>
                         <Border Width="20" Height="Auto"/>
-                        <Button Content="認証状態要求送信2" Command="{Binding NinshouJoutaiYoukyuuCommandTestSendButton2}"/>
+                        <Button Content="連続動作停止" Command="{Binding RenzokuDousaTeishiButton}"/>
                     </WrapPanel>
                     <WrapPanel Margin="0 0 0 0 ">
                         <Label Content="応答時間(ms):" />

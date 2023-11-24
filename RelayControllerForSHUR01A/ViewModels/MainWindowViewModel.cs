@@ -38,6 +38,8 @@ namespace RelayControllerForSHUR01A.ViewModels
             RelayOnButton = new DelegateCommand(RelayOnButtonExecute);
             RelayOffButton = new DelegateCommand(RelayOffButtonExecute);
             RelayToggleButton = new DelegateCommand(RelayToggleButtonExecute);
+            RenzokuDousaKaishiButton = new DelegateCommand(RenzokuDousaKaishiButtonExecute);
+            RenzokuDousaTeishiButton = new DelegateCommand(RenzokuDousaTeishiButtonExecute);
 
             LogClearButton = new DelegateCommand(LogClearButtonExecute);
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
@@ -122,6 +124,19 @@ namespace RelayControllerForSHUR01A.ViewModels
             serialInterfaceProtocolManager.SendToggle();
         }
 
+        public DelegateCommand RenzokuDousaKaishiButton { get; }
+
+        private void RenzokuDousaKaishiButtonExecute()
+        {
+            serialInterfaceProtocolManager.StartRenzokuDousa();
+        }
+
+        public DelegateCommand RenzokuDousaTeishiButton { get; }
+
+        private void RenzokuDousaTeishiButtonExecute()
+        {
+            serialInterfaceProtocolManager.StopRenzokuDousa();
+        }
 
         public DelegateCommand LogClearButton { get; }
 
