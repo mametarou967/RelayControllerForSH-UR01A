@@ -15,7 +15,7 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
         [StringValue("Off")]
         Off = 1,
     }
-    public class SerialInterfaceProtocolManager
+    public class UsbRelayProtocolManager
     {
         RelayControllerForSHUR01A.Model.SerialCom.SerialCom serialCom;
         Queue<byte> receiveDataQueue = new Queue<byte>();
@@ -27,33 +27,17 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
 
 
         // 要求応答プロパティ
-        public bool IsResponseEnableYoukyuuOutou = true;
-        public bool IsIdtAdrErrorYoukyuuOutou = false;
-        public bool IsInoutDirErrorYoukyuuOutou = false;
-        public bool IsRiyoushaIdErrorYoukyuuOutou = false;
-        public bool IsBccErrorYoukyuuOutou = false;
         public uint ReleyOnJikanMs = 2000;
         public uint ReleyOffJikanMs = 2000;
 
-        public uint YoukyuuOutouJikanMs = 2000;
-
-        // 要求状態応答プロパティ
-        public bool IsResponseEnableYoukyuuJoutaiOutou = true;
-        public bool IsIdtAdrErrorYoukyuuJoutaiOutou = false;
-        public bool IsInoutDirErrorYoukyuuJoutaiOutou = false;
-        public bool IsRiyoushaIdErrorYoukyuuJoutaiOutou = false;
-        public bool IsBccErrorYoukyuuJoutaiOutou = false;
-        public uint YoukyuuJoutaiOutouJikanMs = 2000;
-        public string RiyoushaId = "00043130";
-
-        public SerialInterfaceProtocolManager(ILogWriteRequester logWriteRequester)
+        public UsbRelayProtocolManager(ILogWriteRequester logWriteRequester)
         {
             this.logWriteRequester = logWriteRequester;
         }
 
         public void ComStart(string comPort)
         {
-            if ((serialCom != null) && serialCom.IsCommunicating)
+            if (IsComStarted())
             {
                 logWriteRequester.WriteRequest(LogLevel.Error, "通信中のため、新しい通信は開始しません");
             }
@@ -66,13 +50,25 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
 
         public void ComStop()
         {
-            if ((serialCom == null) || !(serialCom.IsCommunicating))
+            if (!IsComStarted())
             {
                 logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、通信の停止処理は行いません");
             }
             else
             {
                 serialCom?.StopCom();
+            }
+        }
+
+        private bool IsComStarted()
+        {
+            if((serialCom == null) || !serialCom.IsCommunicating)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -108,8 +104,8 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
 
         public void SendToggle()
         {
-            ICommand command = new NinshouYoukyuuOutouCommand();
-            if (relayStatus == RelayStatus.Off) command = new NinshouYoukyuuCommand();
+            ICommand command = new RelayOffCommand();
+            if (relayStatus == RelayStatus.Off) command = new RelayOnCommand();
 
             Send(command);
         }
@@ -118,6 +114,18 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
         public bool StartRenzokuDousa()
         {
             // 例外処理
+            if (!IsComStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、連続動作開始処理は行いません");
+                return false;
+            }
+
+            if (cancellationTokenSource!=null)
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "連続動作処理が開始されているため、連続動作開始処理は行いません");
+                return false;
+            }
+
 
             cancellationTokenSource = new CancellationTokenSource();
 
@@ -126,19 +134,22 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
                 while (true)
                 {
                     if (cancellationTokenSource.Token.IsCancellationRequested) break;
-                    Send(new NinshouYoukyuuCommand());
+                    Send(new RelayOnCommand());
 
                     await Task.Delay(TimeSpan.FromMilliseconds(ReleyOnJikanMs)); // Adjust the delay duration as needed
 
                     if (cancellationTokenSource.Token.IsCancellationRequested) break;
-                    Send(new NinshouYoukyuuOutouCommand());
+                    Send(new RelayOffCommand());
                     
                     await Task.Delay(TimeSpan.FromMilliseconds(ReleyOffJikanMs)); // Adjust the delay duration as needed
 
                 }
                 logWriteRequester.WriteRequest(LogLevel.Info, "task完了 " );
 
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = null;
             });
+
 
             return true;
         }
@@ -149,21 +160,25 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
         {
             bool result = true;
 
-            if (cancellationTokenSource != null)
+            if (!IsComStarted())
             {
-                cancellationTokenSource.Cancel();
-                try
-                {
-                    var delayTime = (ReleyOnJikanMs > ReleyOffJikanMs) ? ReleyOnJikanMs : ReleyOffJikanMs;
-                    var waitResult = serialComTask.Wait(TimeSpan.FromMilliseconds(delayTime));
-                    if (!waitResult) result = false;
-                }
-                catch
-                {
-                }
-                cancellationTokenSource.Dispose();
-                cancellationTokenSource = null;
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、連続動作停止処理は行いません");
+                return false;
             }
+
+            if (cancellationTokenSource == null)
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "連続動作処理が開始されていないため、連続動作停止処理は行いません");
+                return false;
+            }
+
+            if(cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "すでに連続動作停止処理実施要求済のため、連続動作停止処理は行いません");
+                return false;
+            }
+            cancellationTokenSource.Cancel();
+
 
             return result;
         }

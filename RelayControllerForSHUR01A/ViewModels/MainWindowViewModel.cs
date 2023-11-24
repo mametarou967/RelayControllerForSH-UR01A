@@ -23,15 +23,10 @@ namespace RelayControllerForSHUR01A.ViewModels
         IEventAggregator _ea;
         LogWriter logWriter;
 
-        public string NinshouJoutaiYoukyuuOutouRiyoushaId
-        {
-            get => serialInterfaceProtocolManager.RiyoushaId;
-            set { serialInterfaceProtocolManager.RiyoushaId = value; }
-        }
 
         public MainWindowViewModel(IEventAggregator ea)
         {
-            serialInterfaceProtocolManager = new SerialInterfaceProtocolManager(new LogWriteRequester(ea));
+            serialInterfaceProtocolManager = new UsbRelayProtocolManager(new LogWriteRequester(ea));
             // コマンドの準備
             SerialStartButton = new DelegateCommand(SerialStartButtonExecute);
             SerialStopButton = new DelegateCommand(SerialStopButtonExecute);
@@ -43,8 +38,6 @@ namespace RelayControllerForSHUR01A.ViewModels
 
             LogClearButton = new DelegateCommand(LogClearButtonExecute);
             PortListSelectionChanged = new DelegateCommand<object[]>(PortListChangedExecute);
-            IncrementYoukyuuOutouJikanMsCommand = new DelegateCommand(IncrementYoukyuuOutouJikanMsValueExecute);
-            DecrementYoukyuuOutouJikanMsCommand = new DelegateCommand(DecrementYoukyuuOutouJikanMsValueExecute);
             IncrementRelayOnJikanMsMsCommand = new DelegateCommand(IncrementRelayOnJikanMsValueExecute);
             DecrementRelayOnJikanMsMsCommand = new DelegateCommand(DecrementRelayOnJikanMsValueExecute);
             IncrementRelayOffJikanMsMsCommand = new DelegateCommand(IncrementRelayOffJikanMsValueExecute);
@@ -109,14 +102,14 @@ namespace RelayControllerForSHUR01A.ViewModels
 
         private void RelayOnButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new NinshouYoukyuuCommand());
+            serialInterfaceProtocolManager.Send(new RelayOnCommand());
         }
 
         public DelegateCommand RelayOffButton { get; }
 
         private void RelayOffButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new NinshouYoukyuuOutouCommand());
+            serialInterfaceProtocolManager.Send(new RelayOffCommand());
         }
 
         public DelegateCommand RelayToggleButton { get; }
@@ -175,7 +168,7 @@ namespace RelayControllerForSHUR01A.ViewModels
             catch { }
         }
 
-        SerialInterfaceProtocolManager serialInterfaceProtocolManager;
+        UsbRelayProtocolManager serialInterfaceProtocolManager;
         String selectedSerialComPort = "";
 
         ObservableCollection<LogItem> _logItems =
@@ -186,75 +179,9 @@ namespace RelayControllerForSHUR01A.ViewModels
             set { SetProperty(ref _logItems, value); }
         }
 
-        // 認証要求応答有効
-        public bool IsResponseEnableYoukyuuOutou
-        {
-            get { return serialInterfaceProtocolManager.IsResponseEnableYoukyuuOutou; }
-            set { serialInterfaceProtocolManager.IsResponseEnableYoukyuuOutou = value; }
-        }
-
-        // 認証要求応答時間
-        public uint YoukyuuOutouJikanMs
-        {
-            get { return serialInterfaceProtocolManager.YoukyuuOutouJikanMs; }
-            set { SetProperty(ref serialInterfaceProtocolManager.YoukyuuOutouJikanMs, value); }
-        }
-
-        public DelegateCommand IncrementYoukyuuOutouJikanMsCommand { get; private set; }
-        public DelegateCommand DecrementYoukyuuOutouJikanMsCommand { get; private set; }
-
-        private void IncrementYoukyuuOutouJikanMsValueExecute()
-        {
-            if (YoukyuuOutouJikanMs <= 9900)
-            {
-                YoukyuuOutouJikanMs = YoukyuuOutouJikanMs + 100;
-            }
-        }
-
-        private void DecrementYoukyuuOutouJikanMsValueExecute()
-        {
-            if (YoukyuuOutouJikanMs >= 100)
-            {
-                YoukyuuOutouJikanMs = YoukyuuOutouJikanMs - 100;
-            }
-        }
-
-        // 認証要求応答BCCエラー
-        public bool IsBccErrorYoukyuuOutou
-        {
-            get { return serialInterfaceProtocolManager.IsBccErrorYoukyuuOutou; }
-            set { serialInterfaceProtocolManager.IsBccErrorYoukyuuOutou = value; }
-        }
-
-        // 認証要求応答ID端末アドレスエラー
-        public bool IsIdtAdrErrorYoukyuuOutou
-        {
-            get { return serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuOutou; }
-            set { serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuOutou = value; }
-        }
-
-        // 認証要求応答入退室方向エラー
-        public bool IsInoutDirErrorYoukyuuOutou
-        {
-            get { return serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuOutou; }
-            set { serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuOutou = value; }
-        }
-
-        // 認証要求応答利用者IDエラー
-        public bool IsRiyoushaIdErrorYoukyuuOutou
-        {
-            get { return serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuOutou; }
-            set { serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuOutou = value; }
-        }
 
         // -------------------------------------------------------------------------------
 
-        // 認証状態要求応答有効
-        public bool IsResponseEnableYoukyuuJoutaiOutou
-        {
-            get { return serialInterfaceProtocolManager.IsResponseEnableYoukyuuJoutaiOutou; }
-            set { serialInterfaceProtocolManager.IsResponseEnableYoukyuuJoutaiOutou = value; }
-        }
 
         // 要求状態応答時間
         public uint RelayOnJikanMs
@@ -307,35 +234,6 @@ namespace RelayControllerForSHUR01A.ViewModels
             {
                 RelayOffJikanMs = RelayOffJikanMs - 100;
             }
-        }
-
-
-        // 認証状態要求応答ID端末アドレスエラー
-        public bool IsIdtAdrErrorYoukyuuJoutaiOutou
-        {
-            get { return serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuJoutaiOutou; }
-            set { serialInterfaceProtocolManager.IsIdtAdrErrorYoukyuuJoutaiOutou = value; }
-        }
-
-        // 認証状態要求応答入退室方向エラー
-        public bool IsInoutDirErrorYoukyuuJoutaiOutou
-        {
-            get { return serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuJoutaiOutou; }
-            set { serialInterfaceProtocolManager.IsInoutDirErrorYoukyuuJoutaiOutou = value; }
-        }
-
-        // 認証要求応答利用者IDエラー
-        public bool IsRiyoushaIdErrorYoukyuuJoutaiOutou
-        {
-            get { return serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuJoutaiOutou; }
-            set { serialInterfaceProtocolManager.IsRiyoushaIdErrorYoukyuuJoutaiOutou = value; }
-        }
-
-        // 認証状態要求応答BCCエラー
-        public bool IsBccErrorYoukyuuJoutaiOutou
-        {
-            get { return serialInterfaceProtocolManager.IsBccErrorYoukyuuJoutaiOutou; }
-            set { serialInterfaceProtocolManager.IsBccErrorYoukyuuJoutaiOutou = value; }
         }
     }
 }
