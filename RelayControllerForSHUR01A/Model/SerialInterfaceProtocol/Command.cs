@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
 {
@@ -67,34 +68,11 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
         public byte[] ByteArray()
         {
 
-            List<byte> data_tmp1 = new List<byte>();
-
-            var idTanmatsuAddress = IdTanmatsuAddress;
-            data_tmp1.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray(idTanmatsuAddress)));
-
-            var nyuutaishitsuHoukou = NyuutaishitsuHoukou;
-            data_tmp1.Add((byte)(0x30 + nyuutaishitsuHoukou));
-            data_tmp1.AddRange(ByteArrayToAsciiArray(SplitIntInto2ByteDigitsArray((int)CommandType)));
-            data_tmp1.AddRange(CommandPayloadByteArray);
-
-            List<byte> data_tmp2 = new List<byte>();
-
-            data_tmp2.AddRange(IntTo2ByteArray(data_tmp1.Count));
-            data_tmp2.AddRange(data_tmp1);
-            data_tmp2.Add(0x03); // ETX
-
             List<byte> data = new List<byte>();
 
-            data.Add(0x02); // STX
-            data.AddRange(data_tmp2);
+            var atc = "AT+CH1=1";
 
-            var bcc = XorBytes(data_tmp2.ToArray());
-            if (BccError)
-            {
-                byte all1 = 0xFF;
-                bcc = (byte)(bcc ^ all1);
-            }
-            data.Add(bcc); // BCC
+            data.AddRange(Encoding.ASCII.GetBytes(atc));
 
             return data.ToArray();
         }

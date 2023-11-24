@@ -1,0 +1,101 @@
+﻿<Window x:Class="RelayControllerForSHUR01A.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:local="clr-namespace:RelayControllerForSHUR01A.ViewModels"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}" Height="500" Width="1200"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <local:RadioButtonConverter x:Key="EnumConverter" />
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="500"/>
+        </Grid.ColumnDefinitions>
+
+        <ListBox Name="itemListBox" ItemsSource="{Binding LogItems}" Grid.Column="0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Timestamp}" Margin="3" Foreground="Gray"/>
+                            <Border Width="1" Margin="1"/>
+                            <TextBlock Text="{Binding Content}" Margin="3" Foreground="{Binding ForegroundColor}"/>
+                        </StackPanel>
+                        <Border BorderBrush="LightGray" BorderThickness="0,0,0,1"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Column="1">
+            <WrapPanel Margin="0 0 0 0 ">
+                <Button Content="ログクリア" Command="{Binding LogClearButton}" Width="100" />
+                <Border Width="10" Height="Auto"/>
+                <CheckBox Content="ログスクロール" IsChecked="{Binding LogScroll}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </WrapPanel>
+            <!-- シリアル通信 -->
+            <Label Content="■ シリアル通信" Margin="0 0 0 1"></Label>
+            <WrapPanel Margin="22 0 0 0 ">
+                <Button Content="シリアル通信開始" Command="{Binding SerialStartButton}"/>
+                <Border Width="10" Height="Auto"/>
+                <Button Content="シリアル通信終了" Command="{Binding SerialStopButton}"/>
+                <Border Width="20" Height="Auto"/>
+                <Label Content="COMPORT:"></Label>
+                <ComboBox ItemsSource="{Binding SerialPortList}"
+                      SelectedValuePath="Value"
+                      DisplayMemberPath="DisplayValue"
+                      Width="150"
+                      Margin="0">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <prism:InvokeCommandAction
+                            Command="{Binding PortListSelectionChanged}"
+                            TriggerParameterPath="AddedItems"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </ComboBox>
+            </WrapPanel>
+            <!-- 認証要求 -->
+            <Label Content="■ 認証要求" Margin="0 0 0 1"></Label>
+            <WrapPanel Margin="22 0 0 0 ">
+                <Button Content="認証要求送信" Command="{Binding NinshouYoukyuuCommandTestSendButton}"/>
+                <Border Width="20" Height="Auto"/>
+                <Button Content="認証要求送信2" Command="{Binding NinshouYoukyuuCommandTestSendButton2}"/>
+            </WrapPanel>
+            <!-- 認証要求応答 -->
+            <!-- 認証状態要求 -->
+            <Label Content="■ 認証状態要求" Margin="0 0 0 1"></Label>
+            <WrapPanel Margin="22 0 0 0 ">
+                <StackPanel>
+                    <WrapPanel Margin="0 0 0 0 ">
+                        <Button Content="認証状態要求送信" Command="{Binding NinshouJoutaiYoukyuuCommandTestSendButton}"/>
+                        <Border Width="20" Height="Auto"/>
+                        <Button Content="認証状態要求送信2" Command="{Binding NinshouJoutaiYoukyuuCommandTestSendButton2}"/>
+                    </WrapPanel>
+                    <WrapPanel Margin="0 0 0 0 ">
+                        <Label Content="応答時間(ms):" />
+                        <TextBox TextAlignment="Right" Text="{Binding YoukyuuJoutaiOutouJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center" Width="50"/>
+                        <RepeatButton Content="▲" FontSize="10"  Width="20" Height="18" Command="{Binding IncrementYoukyuuJoutaiOutouJikanMsCommand}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <RepeatButton Content="▼" FontSize="10" Width="20" Height="18" Command="{Binding DecrementYoukyuuJoutaiOutouJikanMsCommand}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Label Content="応答時間(ms):" />
+                        <TextBox TextAlignment="Right" Text="{Binding YoukyuuJoutaiOutouJikanMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center" Width="50"/>
+                        <RepeatButton Content="▲" FontSize="10"  Width="20" Height="18" Command="{Binding IncrementYoukyuuJoutaiOutouJikanMsCommand}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <RepeatButton Content="▼" FontSize="10" Width="20" Height="18" Command="{Binding DecrementYoukyuuJoutaiOutouJikanMsCommand}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </WrapPanel>
+                </StackPanel>
+            </WrapPanel>
+            <!-- 認証状態要求応答 -->
+            <Border Height="10" Width="Auto"/>
+            <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+        </StackPanel>
+    </Grid>
+</Window>

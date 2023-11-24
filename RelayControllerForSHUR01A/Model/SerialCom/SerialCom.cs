@@ -51,7 +51,7 @@ namespace RelayControllerForSHUR01A.Model.SerialCom
 
             try
             {
-                serialPort = new SerialPort(comport, 19200);
+                serialPort = new SerialPort(comport, 9600,Parity.None,8,StopBits.One);
                 serialPort.Open();
             }
             catch (Exception ex)
@@ -119,22 +119,6 @@ namespace RelayControllerForSHUR01A.Model.SerialCom
 
                         // 送信データバイナリログ出力
                         logWriteRequester.WriteRequest(LogLevel.Debug, "[SND] " + string.Join(" ", sendList.ToArray().Select(b => $"0x{b:X2}")));
-
-                        // 半二重の場合には、自分が送信したデータを受信してしまうため、同じ数データを受信した時点でこれを破棄する処理を行う
-                        // 送信したデータを受信している間は外部からの受信はないという前提で行う
-                        // 前二重でこのコードを実行した場合は無限待ちになってしまう可能性があるので、注意すること
-                        while (true)
-                        {
-                            if (serialPort.BytesToRead >= sendList.Count)
-                            {
-                                byte[] receiveBuffer = new byte[sendList.Count];
-
-                                // 送った分だけ読み取る(そして捨てる)
-                                serialPort.Read(receiveBuffer, 0, sendList.Count);
-
-                                break;
-                            }
-                        }
 
                     }
 
