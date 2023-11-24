@@ -102,21 +102,21 @@ namespace RelayControllerForSHUR01A.ViewModels
 
         private void RelayOnButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new RelayOnCommand());
+            serialInterfaceProtocolManager.RelayOn();
         }
 
         public DelegateCommand RelayOffButton { get; }
 
         private void RelayOffButtonExecute()
         {
-            serialInterfaceProtocolManager.Send(new RelayOffCommand());
+            serialInterfaceProtocolManager.RelayOff();
         }
 
         public DelegateCommand RelayToggleButton { get; }
 
         private void RelayToggleButtonExecute()
         {
-            serialInterfaceProtocolManager.SendToggle();
+            serialInterfaceProtocolManager.Toggle();
         }
 
         public DelegateCommand RenzokuDousaKaishiButton { get; }

@@ -40,12 +40,11 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
             if (IsComStarted())
             {
                 logWriteRequester.WriteRequest(LogLevel.Error, "通信中のため、新しい通信は開始しません");
+                return;
             }
-            else
-            {
-                serialCom = new SerialCom.SerialCom(comPort, DataReceiveAction, logWriteRequester);
-                serialCom.StartCom();
-            }
+
+            serialCom = new SerialCom.SerialCom(comPort, DataReceiveAction, logWriteRequester);
+            serialCom.StartCom();
         }
 
         public void ComStop()
@@ -53,11 +52,12 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
             if (!IsComStarted())
             {
                 logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、通信の停止処理は行いません");
+                return;
             }
-            else
-            {
-                serialCom?.StopCom();
-            }
+
+            if (IsRenzokuDousaStarted()) StopRenzokuDousa();
+
+            serialCom?.StopCom();
         }
 
         private bool IsComStarted()
@@ -72,20 +72,25 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
             }
         }
 
-        public void Send(ICommand command)
+        void Send(ICommand command)
         {
+            if (!IsComStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、コマンドは送信しません");
+                return;
+            }
+
             lock (sendLock) // ロックを獲得
             {
 
                 try
                 {
-                    var byteArray = command.ByteArray();
 
                     if (serialCom != null)
                     {
-                        logWriteRequester.WriteRequest(LogLevel.Info, "[送信] " + command.ToString());
-
-                        // if (bccError) logWriteRequester.WriteRequest(LogLevel.Warning, "<i> bccError設定が有効のため、BCCエラーで送信します");
+                        var byteArray = command.ByteArray();
+                        string asciiString = System.Text.Encoding.ASCII.GetString(byteArray);
+                        logWriteRequester.WriteRequest(LogLevel.Info, $"[送信]{asciiString}");
 
                         // 送信前に状態を覚えておく
                         if (command.CommandType == CommandType.RelayOn) relayStatus = RelayStatus.On;
@@ -102,8 +107,54 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
             }
         }
 
-        public void SendToggle()
+        public void RelayOn()
         {
+            if (!IsComStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、リレーON操作は行いません");
+                return;
+            }
+
+            if (IsRenzokuDousaStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "連続動作処理が開始されているため、リレーON操作は行いません");
+                return;
+            }
+
+            Send(new RelayOnCommand());
+        }
+
+        public void RelayOff()
+        {
+            if (!IsComStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、リレーOFF操作は行いません");
+                return;
+            }
+
+            if (IsRenzokuDousaStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "連続動作処理が開始されているため、リレーOFF操作は行いません");
+                return;
+            }
+
+            Send(new RelayOffCommand());
+        }
+
+        public void Toggle()
+        {
+            if (!IsComStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "通信が開始されていないため、トグル操作は行いません");
+                return;
+            }
+
+            if (IsRenzokuDousaStarted())
+            {
+                logWriteRequester.WriteRequest(LogLevel.Error, "連続動作処理が開始されているため、トグル操作は行いません");
+                return;
+            }
+
             ICommand command = new RelayOffCommand();
             if (relayStatus == RelayStatus.Off) command = new RelayOnCommand();
 
@@ -120,7 +171,7 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
                 return false;
             }
 
-            if (cancellationTokenSource!=null)
+            if (IsRenzokuDousaStarted())
             {
                 logWriteRequester.WriteRequest(LogLevel.Error, "連続動作処理が開始されているため、連続動作開始処理は行いません");
                 return false;
@@ -128,6 +179,7 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
 
 
             cancellationTokenSource = new CancellationTokenSource();
+            logWriteRequester.WriteRequest(LogLevel.Info, "連続動作処理開始");
 
             serialComTask = Task.Run(async () =>
             {
@@ -144,17 +196,24 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
                     await Task.Delay(TimeSpan.FromMilliseconds(ReleyOffJikanMs)); // Adjust the delay duration as needed
 
                 }
-                logWriteRequester.WriteRequest(LogLevel.Info, "task完了 " );
 
                 cancellationTokenSource.Dispose();
                 cancellationTokenSource = null;
+                logWriteRequester.WriteRequest(LogLevel.Info, "連続動作処理終了");
             });
 
 
             return true;
         }
 
-
+        bool IsRenzokuDousaStarted()
+        {
+            if(cancellationTokenSource == null)
+            {
+                return false;
+            }
+            return true;
+        }
 
         public bool StopRenzokuDousa()
         {
@@ -166,7 +225,7 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
                 return false;
             }
 
-            if (cancellationTokenSource == null)
+            if (!IsRenzokuDousaStarted())
             {
                 logWriteRequester.WriteRequest(LogLevel.Error, "連続動作処理が開始されていないため、連続動作停止処理は行いません");
                 return false;
@@ -177,70 +236,21 @@ namespace RelayControllerForSHUR01A.Model.SerialInterfaceProtocol
                 logWriteRequester.WriteRequest(LogLevel.Error, "すでに連続動作停止処理実施要求済のため、連続動作停止処理は行いません");
                 return false;
             }
-            cancellationTokenSource.Cancel();
 
+            logWriteRequester.WriteRequest(LogLevel.Info, "連続動作処理の停止を行います");
+            cancellationTokenSource.Cancel();
 
             return result;
         }
 
         private void DataReceiveAction(byte[] datas)
         {
-            // キュー詰め
-            datas.ToList().ForEach(receiveDataQueue.Enqueue);
-
-
-            while (receiveDataQueue.ToArray().Length != 0)
+            byte byteToRemove = 0x0A; // 改行コードは除去
+            if (datas.Length != 0)
             {
-                // 受信データの評価
-                var byteCheckResult = CommandGenerator.ByteCheck(receiveDataQueue.ToArray());
-
-                if (byteCheckResult == ByteCheckResult.Ok)
-                {
-                    // サイズを調べる
-                    var size = CommandGenerator.GetCommandByteLength(receiveDataQueue.ToArray());
-
-                    if (!size.HasValue) continue;
-
-                    List<byte> commandBytes = new List<byte>();
-
-                    // サイズ分デキューする
-                    for (int i = 0; i < size.Value; i++)
-                    {
-                        commandBytes.Add(receiveDataQueue.Dequeue());
-                    }
-
-                }
-                else if (byteCheckResult == ByteCheckResult.NgNoStx)
-                {
-                    // 先頭をdequeueして終了
-                    receiveDataQueue.Dequeue();
-
-                }
-                else if (
-                    (byteCheckResult == ByteCheckResult.NgNoByte) ||
-                    (byteCheckResult == ByteCheckResult.NgHasNoLengthField) ||
-                    (byteCheckResult == ByteCheckResult.NgMessageIncompleted))
-                {
-                    // データがたまるまで待つ
-                    break;
-                }
-                else if (
-                    (byteCheckResult == ByteCheckResult.NgNoEtx) ||
-                    (byteCheckResult == ByteCheckResult.NgBccError))
-                {
-                    // サイズを調べる
-                    var size = CommandGenerator.GetCommandByteLength(receiveDataQueue.ToArray());
-
-                    if (!size.HasValue) continue;
-
-                    // サイズ分デキューする
-                    for (int i = 0; i < size.Value; i++)
-                    {
-                        receiveDataQueue.Dequeue();
-                    }
-
-                    logWriteRequester.WriteRequest(LogLevel.Error, $"{ byteCheckResult.GetStringValue()} のためメッセージを破棄します");
-                }
+                string asciiString = System.Text.Encoding.ASCII.GetString(datas.Where(b => b != byteToRemove).ToArray());
+                logWriteRequester.WriteRequest(LogLevel.Info, $"[受信]{ asciiString }");
+                
             }
         }
     }
